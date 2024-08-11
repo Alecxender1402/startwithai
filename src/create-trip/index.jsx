@@ -18,13 +18,19 @@ import {
 } from "@/components/ui/dialog";
 import { FcGoogle } from "react-icons/fc";
 import { useGoogleLogin } from "@react-oauth/google";
+import axios from "axios";
+import { db } from "@/config/FirebaseConfig";
+import { doc, setDoc } from "firebase/firestore";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { useNavigate} from "react-router-dom";
 
 const Index = () => {
   const [place, setPlace] = useState("");
   const [days, setDays] = useState("");
   const [formdata, setformdata] = useState([]);
   const [opendailog, setOpendailog] = useState(false);
-
+  const [loading, setloading] = useState(false);
+  const navigate = useNavigate();
   const handleInputchange = (name, value) => {
     setformdata({ ...formdata, [name]: value });
   };
@@ -34,10 +40,10 @@ const Index = () => {
   }, [formdata]);
 
   const login = useGoogleLogin({
-    onSuccess: (user) => console.log(user),
+    onSuccess: (user) => GetUserprofile(user),
     onError: (error) => console.log(error),
   });
- 
+
   const onGenerateTrip = async () => {
     const user = localStorage.getItem("user");
 
@@ -53,17 +59,50 @@ const Index = () => {
       toast("Please fill all the fields");
       return;
     }
-
+    setloading(true);
     const FINAL_PROMPT = AI_PROMPT.replace("{place}", formdata?.place)
       .replace("{days}", formdata?.days)
       .replace("{people}", formdata?.people)
       .replace("{budget}", formdata?.budget)
       .replace("{days}", formdata?.days);
-
-    console.log(FINAL_PROMPT);
-
+      
     const result = await chatSession.sendMessage(FINAL_PROMPT);
     console.log(result?.response?.text());
+    setloading(false);
+    SaveAitrip(result?.response?.text());
+   
+  };
+
+  const SaveAitrip = async (TripData) => {
+    setloading(true);
+    const user = JSON.parse(localStorage.getItem("user"));
+    const docId = Date.now().toString();
+    await setDoc(doc(db, "AITrips", docId), {
+      userselection: formdata,
+      tripdata: JSON.parse(TripData),
+      userEmail: user?.email,
+      id: docId,
+    });
+    setloading(false);
+    navigate(`/view-trips/${docId}`);
+  };
+  const GetUserprofile = (tokenInfo) => {
+    axios
+      .get(
+        `https://www.googleapis.com/oauth2/v1/userinfo?acess_token=${tokenInfo?.access_token}`,
+        {
+          headers: {
+            Authorization: `Bearer ${tokenInfo?.access_token}`,
+            accept: "application/json",
+          },
+        }
+      )
+      .then((res) => {
+        console.log(res);
+        localStorage.setItem("user", JSON.stringify(res.data));
+        setOpendailog(false);
+        onGenerateTrip();
+      });
   };
 
   return (
@@ -145,22 +184,23 @@ const Index = () => {
         </div>
       </div>
       <div className="my-10 justify-end flex">
-        <Button onClick={onGenerateTrip}>Generate Trip</Button>
+        <Button disabled = {loading} onClick={onGenerateTrip}>
+          {loading ? <AiOutlineLoading3Quarters className="animate-spin h-7 w-7" /> : "Generate Trip"}
+        </Button>
       </div>
 
       <Dialog open={opendailog}>
-        
         <DialogContent>
           <DialogHeader>
-            
             <DialogDescription>
-             <img src="logo.svg" />
-             <h2 className="font-bold text-lg mt-7">Sign in with Google</h2>
-             <Button
-             onClick={login}
-              className="w-full mt-5 flex gap-4 items-center">
-             <FcGoogle className="h-7 w-7"/>
-              Sign in with Google
+              <img src="logo.svg" />
+              <h2 className="font-bold text-lg mt-7">Sign in with Google</h2>
+              <Button
+                onClick={login}
+                className="w-full mt-5 flex gap-4 items-center"
+              >
+                <FcGoogle className="  h-7 w-7" />
+                Sign in with Google
               </Button>
             </DialogDescription>
           </DialogHeader>
