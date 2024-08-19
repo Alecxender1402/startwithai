@@ -7,10 +7,11 @@ const InfoSection = ({trip}) => {
     useEffect(()=> {
      trip && getphoto();
     },[trip])
+
     const getphoto = async()=> {
-        const data = [
-            {textQuery: trip?.userselection?.place}
-        ]
+        const data = {
+            textQuery: trip?.userselection?.place
+        }
        const result = await getPlaces(data).then((res)=> {
         console.log(res.data);
        })

@@ -6,7 +6,7 @@ const PlacetoVisit = ({trip}) => {
     <div>
     <h2 className='font-bold text-lg mt-3'>Places to Visit</h2>
 
-    <div>
+    <div className=''>
         {trip?.tripdata?.itinerary?.map((item,index) => (
             <div className='mt-5' >
                 <h2 className='font-medium text-lg'>{item.day}</h2>
