@@ -18,7 +18,6 @@ const InfoSection = ({trip}) => {
     }
   return (
     <div>
-      <img src='/img.webp' className='h-[340px] w-full object-cover rounded-xl'/>
       <div className='flex justify-between items-center'>
       <div className='my-5 flex flex-col gap-2'>
         <h2 className='font-bold text-2xl'>{trip?.userselection?.place}</h2>
@@ -29,7 +28,7 @@ const InfoSection = ({trip}) => {
         </div>
       </div>
          
-         <Button><IoSend /></Button>
+        
 
       </div>
     </div>

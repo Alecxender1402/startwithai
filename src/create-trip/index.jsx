@@ -165,7 +165,7 @@ const Index = () => {
 
       <div>
         <h2 className="text-xl my-3 font-medium">
-          Who do you plan on traveling with on your next adventure?
+          Who do you want to travel with on your next adventure?
         </h2>
         <div className="grid grid-cols-3 gap-5 mt-5">
           {selectTravelList.map((item, index) => (
